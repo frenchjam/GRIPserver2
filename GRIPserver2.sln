@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GRIPserver2", "GRIPserver2\GRIPserver2.vcxproj", "{CD15B84E-2737-4E7E-AE6D-BE53C5B9A813}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GripGroundMonitorClient", "..\GripGroundMonitorClient\GripGroundMonitorClient\GripGroundMonitorClient.vcxproj", "{26C677E6-BBA3-4406-9E10-CE856AAC42F2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CD15B84E-2737-4E7E-AE6D-BE53C5B9A813}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CD15B84E-2737-4E7E-AE6D-BE53C5B9A813}.Debug|Win32.Build.0 = Debug|Win32
+		{CD15B84E-2737-4E7E-AE6D-BE53C5B9A813}.Release|Win32.ActiveCfg = Release|Win32
+		{CD15B84E-2737-4E7E-AE6D-BE53C5B9A813}.Release|Win32.Build.0 = Release|Win32
+		{26C677E6-BBA3-4406-9E10-CE856AAC42F2}.Debug|Win32.ActiveCfg = Debug|Win32
+		{26C677E6-BBA3-4406-9E10-CE856AAC42F2}.Debug|Win32.Build.0 = Debug|Win32
+		{26C677E6-BBA3-4406-9E10-CE856AAC42F2}.Release|Win32.ActiveCfg = Release|Win32
+		{26C677E6-BBA3-4406-9E10-CE856AAC42F2}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
