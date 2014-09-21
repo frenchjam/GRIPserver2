@@ -16,6 +16,7 @@
 #define GRIP_HK_ID	0x0301
 #define GRIP_RT_ID	0x1001
 
+#define EPMtoSeconds( packet ) ((double)(((unsigned long) packet.header.coarseTimeHigh << 16) + (unsigned long) packet.header.coarseTimeLow) + ((double) packet.header.fineTime / 10000.0))
 typedef struct {
 
 	unsigned long  epmSyncMarker;

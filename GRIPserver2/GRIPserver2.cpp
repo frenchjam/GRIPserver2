@@ -14,6 +14,33 @@ EPMTelemetryPacket hkPacket, rtPacket;
 	bool _debug = false;
 #endif
 
+void setPacketTime( EPMTelemetryPacket *packet ) {
+
+	// Set the time of the specified packet.
+
+	// Time structure to get the local time for the EPM packet coarse and fine time values.
+	// I am using the 32 bit version because the EPM coarse time is 32 bits.
+	struct __timeb32 epmtime;
+	_ftime32_s( &epmtime );
+
+	// NB EPM uses GPS time (second since midnight Jan 5-6 1980), while 
+	// _ftime_s() uses seconds since midnight Jan. 1 1970 UTC.
+	// I am just using UTC time, since it doesn't really matter for 
+	// my purposes here. The idea is just to keep the packets in the right order.
+	// Also, EPM somehow gets time in 10ths of milliseconds and puts that in the header. 
+	// We don't expect to get two packet in a span of less than a millisecond, so I don't worry about it.
+
+	// One could probably treat coarseTime as an unsigned long in the
+	// header and just copy the 32-bit value, but I'm not sure about word order. 
+	// So to be sure to match the EPM spec as it is written, I transfer each
+	//  two-bye word separately.
+	packet->header.coarseTimeLow = (short)(epmtime.time & 0x0000ffff);
+	packet->header.coarseTimeHigh = (short) ((epmtime.time & 0xffff0000) << 16);
+	// Compute the fine time in 10ths of milliseconds.
+	packet->header.fineTime = epmtime.millitm * 10;
+
+}
+
 int _tmain(int argc, char *argv[])
 {
 	WSADATA wsaData;
@@ -119,9 +146,33 @@ int _tmain(int argc, char *argv[])
 		// Send packets until the peer shuts down the connection
 		while ( 1 ) {
 
+			// RT packets get sent out by GRIP twice per second.
+			// This is a trick to avoid drift in the rate.
+			// We compute the number of milliseconds to sleep to get back to a 500 ms boundary.
+			Sleep( 10 );	
+			struct __timeb32 utctime;
+			_ftime32_s( &utctime );
+			Sleep( (1000 - utctime.millitm ) % 500 );
+
+			// Insert the current packet count and time into the packet.
+			rtPacket.header.TMCounter = packetCount++;
+			setPacketTime( &rtPacket );
+			// Send out a realtime data packet.
+			iSendResult = send( ClientSocket, rtPacket.buffer, rtPacketLengthInBytes, 0 );
+			// If we get a socket error it is probably because the client has closed the connection.
+			// So we break out of the loop.
+			if (iSendResult == SOCKET_ERROR) {
+				fprintf( stderr, "RT packet send failed with error: %3d\n", WSAGetLastError());
+				break;
+			}
+			fprintf( stderr, "  RT packet %3d Bytes sent: %3d\n", packetCount, iSendResult);
+
+			// HK packets get sent once every 2 seconds. 
+			// The BOOL sendHK is used to turn off and on for each RT cycle.
 			if ( sendHK ) {
-				// Insert the current packet count into the packet.
+				// Insert the current packet count and time into the packet.
 				hkPacket.header.TMCounter = packetCount++;
+				setPacketTime( &hkPacket );
 				// Send out a housekeeping packet.
 				iSendResult = send( ClientSocket, hkPacket.buffer, hkPacketLengthInBytes, 0 );
 				// If we get a socket error it is probably because the client has closed the connection.
@@ -133,21 +184,6 @@ int _tmain(int argc, char *argv[])
 				fprintf( stderr, "  HK packet %3d Bytes sent: %3d\n", packetCount, iSendResult);
 			}
 			sendHK = !sendHK; // Toggle enable flag so that we do one out of two cycles.
-
-			// Insert the current packet count into the packet.
-			rtPacket.header.TMCounter = packetCount++;
-			// Send out a realtime data packet.
-			iSendResult = send( ClientSocket, rtPacket.buffer, rtPacketLengthInBytes, 0 );
-			// If we get a socket error it is probably because the client has closed the connection.
-			// So we break out of the loop.
-			if (iSendResult == SOCKET_ERROR) {
-				fprintf( stderr, "RT packet send failed with error: %3d\n", WSAGetLastError());
-				break;
-			}
-			fprintf( stderr, "  RT packet %3d Bytes sent: %3d\n", packetCount, iSendResult);
-
-			// RT packets get sent out by GRIP twice per second.
-			Sleep( 500 );
 
 		} while (iResult > 0);
 
