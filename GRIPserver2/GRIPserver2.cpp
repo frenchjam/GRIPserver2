@@ -185,6 +185,12 @@ int _tmain(int argc, char *argv[])
 			}
 			sendHK = !sendHK; // Toggle enable flag so that we do one out of two cycles.
 
+			// Every once in a while, pause a bit to simulate breaks between tasks.
+			if ( (packetCount % 20) == 0 ) {
+				fprintf( stderr, "\nSimulating inter-trial pause.\n\n" );
+				Sleep( 5000 );
+			}
+
 		} while (iResult > 0);
 
 		// shutdown the connection since we're done
